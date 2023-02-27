@@ -6,8 +6,11 @@ public class Train {
     String from;
     String to;
     int noOfseats;
+    int waitingSeats;
 
     public int[] stations = new int[5];
+    public int[] waitingList = new int[5];
+
     public HashMap<Integer,String> stationNames = new HashMap<>();
 
     public Train(String id, String from, String to, int seats){
@@ -15,7 +18,9 @@ public class Train {
         this.from = from;
         this.to = to;
         this.noOfseats = seats;
-        Arrays.fill(stations, 0);
+        this.waitingSeats = 5;
+
+        Arrays.fill(stations,9);
 
         stationNames.put(0, "cbe");
         stationNames.put(1, "tirupur");
@@ -40,11 +45,11 @@ public class Train {
         return min;
     }
 
-    public void bookTicket(int from, int to, HashMap<String, Ticket> tickets){
+    public String bookTicket(int from, int to, HashMap<String, Ticket> tickets){
         for (int i = from; i < to; i++){
             if (stations[i] == noOfseats){
                 System.out.println("No seats available in " + stationNames.get(i));
-                return;
+                return "null";
             }
         }
 
@@ -52,17 +57,50 @@ public class Train {
             stations[i]++;
         }
 
-        //    create a 4 digit length  random number like TKT1234
+        //    creating a 4 digit length  random number like TKT1234
         String ticketId = "TKT"+UUID.randomUUID().toString().substring(0, 4);
 
-        Ticket ticket = new Ticket(ticketId, id, from, to);
+        Ticket ticket = new Ticket(ticketId, id, from, to,"confirmed" );
         tickets.put(ticketId, ticket);
 
-        System.out.println("Ticket booked successfully from " + stationNames.get(from) + " to " + stationNames.get(to));
+        return ticketId;
 
-        System.out.println("Ticket ID : " + ticketId);
+    }
 
-        System.out.println(Arrays.toString(stations));
 
+    public int totalWaitingTicketsAvailable(int from, int to) {
+        
+        int min = Integer.MAX_VALUE;
+        for (int i = from; i < to; i++){
+            if (waitingList[i] == waitingSeats){
+                return 0;
+            }
+        }
+
+        for (int i = from; i < to; i++){
+            int available = waitingSeats - waitingList[i];
+            min = Math.min(min, available);
+        }
+        return min;
+
+    }
+
+    public String bookWaitingTicket(int from, int to, HashMap<String, Ticket> wtickets) {
+        for (int i = from; i < to; i++){
+            if (waitingList[i] == waitingSeats){
+                System.out.println("No seats available in " + stationNames.get(i));
+                return "null";
+            }
+        }
+
+        for (int i = from; i < to; i++){
+            waitingList[i]++;
+        }
+
+        String wticketId = "WTKT"+UUID.randomUUID().toString().substring(0, 4);
+
+        Ticket wticket = new Ticket(wticketId, id, from, to, "waiting");
+        wtickets.put(wticketId, wticket);
+        return wticketId;
     }
 }
